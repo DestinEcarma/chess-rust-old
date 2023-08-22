@@ -1,3 +1,5 @@
+use crate::board::Board;
+
 pub type Bitboard = u64;
 
 pub fn set_bit(bitboard: &mut Bitboard, square_index: u8) {
@@ -45,7 +47,7 @@ pub fn print_bitboard(bitboard: Bitboard, name: Option<&str>) {
 
 	for rank in (0..8).rev() {
 		for file in 0..8 {
-			let square_index = rank * 8 + file;
+			let square_index = Board::to_square_index(rank, file);
 
 			board += if is_occupied(bitboard, square_index) {
 				" 1 "
@@ -59,4 +61,20 @@ pub fn print_bitboard(bitboard: Bitboard, name: Option<&str>) {
 
 	println!("{board}");
 	println!(" ↑ Bitboard: {bitboard}\n");
+}
+
+pub fn print_board_indices() {
+	let mut board = String::new();
+
+	for rank in (0..8).rev() {
+		for file in 0..8 {
+			let square_index = Board::to_square_index(rank, file);
+
+			board += &format!(" {:02} ", square_index);
+		}
+
+		board += "\n"
+	}
+
+	println!("{board}");
 }

@@ -65,7 +65,7 @@ impl FromStr for Board {
 					file += char.to_digit(10).unwrap() as u8
 				}
 				'K' | 'P' | 'N' | 'B' | 'R' | 'Q' | 'k' | 'p' | 'n' | 'b' | 'r' | 'q' => {
-					let square_index = rank * 8 + file;
+					let square_index = Board::to_square_index(rank, file);
 					let color = Color::from(char);
 					let piece = Piece::from(char);
 
@@ -120,23 +120,18 @@ impl Board {
 		}
 	}
 
+	pub fn to_square_index(rank: u8, file: u8) -> u8 {
+		rank * 8 + file
+	}
+
+	pub fn square_to_rank_file(square_index: u8) -> (u8, u8) {
+		let rank = square_index / 8;
+		let file = square_index - rank * 8;
+
+		(rank, file)
+	}
+
 	pub fn get_bitboard(&self, piece: Piece, color: Color) -> Bitboard {
 		self.pieces[piece.to_index()] & self.colors[color.to_index()]
 	}
-}
-
-pub fn print_board_indices() {
-	let mut board = String::new();
-
-	for rank in (0..8).rev() {
-		for file in 0..8 {
-			let square_index = rank * 8 + file;
-
-			board += &format!(" {:02} ", square_index);
-		}
-
-		board += "\n"
-	}
-
-	println!("{board}");
 }

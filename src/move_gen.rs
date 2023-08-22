@@ -1,5 +1,10 @@
+mod attack;
+mod mask;
+mod num_to_edge;
+
 use crate::{
 	bitboard::{self, print_bitboard, set_bit, Bitboard},
+	board::Board,
 	color::Color,
 	magic::Magic,
 };
@@ -19,7 +24,7 @@ fn set_pawn_capture(
 	square_index: i8,
 	right_capture: i8,
 	left_capture: i8,
-	file: usize,
+	file: u8,
 ) {
 	//* Right capture */
 	if file != 0 {
@@ -54,9 +59,9 @@ impl MoveGen {
 		let white_index = Color::White.to_index();
 		let black_index = Color::Black.to_index();
 
-		for rank in 0..8usize {
-			for file in 0..8usize {
-				let square_index = rank * 8 + file;
+		for rank in 0..8 {
+			for file in 0..8 {
+				let square_index = Board::to_square_index(rank, file) as usize;
 
 				//* White captures */
 				if square_index < 56 {
@@ -90,7 +95,7 @@ impl MoveGen {
 
 		for rank in 0..8i8 {
 			for file in 0..8i8 {
-				let square_index = rank * 8 + file;
+				let square_index = Board::to_square_index(rank as u8, file as u8) as i8;
 
 				for offset in offsets {
 					let target_square = square_index + offset;
