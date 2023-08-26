@@ -2,6 +2,7 @@ use crate::{
 	bitboard::{set_bit, Bitboard},
 	color::Color,
 	error::Error,
+	notation::{self, Notation},
 	piece::Piece,
 };
 use std::{
@@ -11,10 +12,10 @@ use std::{
 
 #[allow(dead_code)]
 pub struct Board {
-	pub pieces: [Bitboard; 6],
-	pub colors: [Bitboard; 2],
+	pieces: [Bitboard; 6],
+	colors: [Bitboard; 2],
 
-	pub turn: Color,
+	turn: Color,
 
 	pub caslting_rights: u8,
 	pub enpassant: Option<u8>,
@@ -22,7 +23,7 @@ pub struct Board {
 
 impl Default for Board {
 	fn default() -> Self {
-		Board::from_str("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
+		Board::from_str(&"3K4/3PP3/3q4/6b1/8/8/8/8 w - - 0 1").unwrap()
 	}
 }
 
@@ -53,7 +54,7 @@ impl FromStr for Board {
 		let pieces = tokens[0];
 		let turn = tokens[1];
 		let castle_right = tokens[2];
-		// let enpassant = tokens[3];
+		let enpassant = tokens[3];
 
 		for char in pieces.chars() {
 			match char {
@@ -97,12 +98,17 @@ impl FromStr for Board {
 				'K' => board.caslting_rights |= 1u8 << 1,
 				'q' => board.caslting_rights |= 1u8 << 2,
 				'k' => board.caslting_rights |= 1u8 << 3,
+				'-' => continue,
 				_ => {
 					return Err(Error::InvalidFen {
 						fen: value.to_string(),
 					})
 				}
 			}
+		}
+
+		if let Ok(notation) = Notation::from_str(&enpassant) {
+			board.enpassant = Some(notation as u8)
 		}
 
 		Ok(board)
@@ -131,7 +137,26 @@ impl Board {
 		(rank, file)
 	}
 
+	pub fn square_index_to_bitboard(square_index: u8) -> Bitboard {
+		let mut bitboard = 0;
+		set_bit(&mut bitboard, square_index);
+
+		bitboard
+	}
+
+	pub fn get_color(&self) -> Color {
+		self.turn
+	}
+
 	pub fn get_bitboard(&self, piece: Piece, color: Color) -> Bitboard {
 		self.pieces[piece.to_index()] & self.colors[color.to_index()]
+	}
+
+	pub fn get_occupancy(&self) -> Bitboard {
+		self.colors[Color::White.to_index()] | self.colors[Color::Black.to_index()]
+	}
+
+	pub fn get_allys(&self, color: Color) -> Bitboard {
+		self.colors[color.to_index()]
 	}
 }

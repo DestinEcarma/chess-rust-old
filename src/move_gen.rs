@@ -1,15 +1,30 @@
 mod attack;
+mod defs;
+mod extra;
+mod init;
 mod mask;
 mod num_to_edge;
 
+use std::io::empty;
+
+use self::defs::Move;
+
 use crate::{
-	bitboard::{self, print_bitboard, set_bit, Bitboard},
+	bitboard::{
+		self, get_lsb_index, is_occupied, pop_lsb, pop_lsb_to_bitboard, print_bitboard, set_bit,
+		Bitboard,
+	},
 	board::Board,
 	color::Color,
 	magic::Magic,
+	piece::Piece, notation::{self, Notation},
 };
 
-pub struct MoveGen {
+const PAWN_PUSH_DIRECTION: [i8; 2] = [8, -8];
+const PAWN_DOUBLE_PUSH_MASK: [u64; 2] = [0x00000000ff000000, 0x000000ff00000000];
+const PAWN_PROMOTION_MASK: [u64; 2] = [0x00000000000000ff, 0xff00000000000000];
+
+pub struct MoveGenerator {
 	king: [Bitboard; 64],
 	pawn: [[Bitboard; 64]; 2],
 	knight: [Bitboard; 64],
@@ -17,30 +32,18 @@ pub struct MoveGen {
 	bishop: Vec<Bitboard>,
 	rook_magics: [Magic; 64],
 	bishop_magics: [Magic; 64],
+
+	check: bool,
+	double_check: bool,
+
+	pub pin_rays: [Bitboard; 64],
+	pub check_ray: Bitboard,
+	pub bb_attack: Bitboard,
 }
 
-fn set_pawn_capture(
-	bitboard: &mut Bitboard,
-	square_index: i8,
-	right_capture: i8,
-	left_capture: i8,
-	file: u8,
-) {
-	//* Right capture */
-	if file != 0 {
-		set_bit(&mut *bitboard, (square_index + right_capture) as u8);
-		*bitboard = *bitboard;
-	}
-
-	//* Left capture */
-	if file != 7 {
-		set_bit(&mut *bitboard, (square_index + left_capture) as u8);
-	}
-}
-
-impl MoveGen {
-	pub fn new() -> Self {
-		let move_gen = MoveGen {
+impl Default for MoveGenerator {
+	fn default() -> Self {
+		let mut move_gen = Self {
 			king: [0; 64],
 			pawn: [[0; 64]; 2],
 			knight: [0; 64],
@@ -48,70 +51,101 @@ impl MoveGen {
 			bishop: vec![0; 5_248],
 			rook_magics: [Magic::default(); 64],
 			bishop_magics: [Magic::default(); 64],
+
+			check: false,
+			double_check: false,
+
+			pin_rays: [0; 64],
+			check_ray: 0,
+			bb_attack: 0,
 		};
+		move_gen.init();
 
 		move_gen
 	}
+}
 
-	pub fn init_pawn(&mut self) {
-		let pawn = &mut self.pawn;
+impl MoveGenerator {
+	pub fn piece(&self, board: &Board, piece: Piece, list: &mut Vec<Move>) {
+		let color = board.get_color();
+		let bb_occupancy = board.get_occupancy();
 
-		let white_index = Color::White.to_index();
-		let black_index = Color::Black.to_index();
+		let bb_empty = !bb_occupancy;
+		let bb_ally_pieces = board.get_allys(color);
+		let bb_opponent_pieces = board.get_allys(!color);
 
-		for rank in 0..8 {
-			for file in 0..8 {
-				let square_index = Board::to_square_index(rank, file) as usize;
+		let mut bb_pieces = board.get_bitboard(piece, color);
 
-				//* White captures */
-				if square_index < 56 {
-					set_pawn_capture(
-						&mut pawn[white_index][square_index],
-						square_index as i8,
-						7,
-						9,
-						file,
-					);
+		while bb_pieces > 0 {
+			let square_index = pop_lsb(&mut bb_pieces) as usize;
+			let bb_target = match piece {
+				Piece::King | Piece::Knight => self.get_non_slider_attacks(piece, square_index),
+				Piece::Queen | Piece::Rook | Piece::Bishop => {
+					self.get_slider_attacks(piece, square_index, bb_occupancy)
 				}
+				_ => panic!("Not a piece: {}", piece.to_full_name()),
+			} & !bb_ally_pieces;
 
-				//* Black captures */
-				if square_index >= 8 {
-					set_pawn_capture(
-						&mut pawn[black_index][square_index],
-						square_index as i8,
-						-9,
-						-7,
-						file,
-					);
-				}
+			let bb_moves = match piece {
+				Piece::King => bb_target & !self.bb_attack,
+				_ => self.isolate_attack_pin_checks(bb_target, square_index),
+			};
+
+			print_bitboard(
+				bb_moves,
+				Some(format!("{} -> {}", piece.to_full_name(), Notation::from(square_index)).as_str()),
+			)
+		}
+	}
+
+	pub fn pawns(&self, board: &Board, list: &mut Vec<Move>) {
+		let color = board.get_color();
+
+		let bb_empty = !board.get_occupancy();
+		let bb_opponent_pieces = board.get_allys(!color);
+		let mut bb_pawns = board.get_bitboard(Piece::Pawn, color);
+
+		let color_index = color.to_index();
+		let double_push_mask = PAWN_DOUBLE_PUSH_MASK[color_index];
+		let direction = PAWN_PUSH_DIRECTION[color_index];
+		let rotation_count = (64 + direction) as u32;
+
+		while bb_pawns > 0 {
+			let square_index = pop_lsb(&mut bb_pawns) as usize;
+			let mut bb_moves = 0;
+
+			//* Pushs */
+			{
+				let bb_push =
+					Board::square_index_to_bitboard((square_index as i8 + direction) as u8);
+				let bb_one_step = bb_push & bb_empty;
+				let bb_two_step =
+					bb_one_step.rotate_left(rotation_count) & bb_empty & double_push_mask;
+
+				bb_moves |= bb_one_step | bb_two_step;
+			}
+
+			//* Captures */
+			{
+				let capture_mask = self.get_pawn_attacks(square_index, color);
+				let bb_capture = capture_mask & bb_opponent_pieces;
+				let bb_ep_capture = match board.enpassant {
+					Some(ep) => capture_mask & Board::square_index_to_bitboard(ep),
+					None => 0,
+				};
+
+				bb_moves |= bb_capture | bb_ep_capture;
+			}
+
+			self.isolate_attack_pin_checks(bb_moves, square_index);
+
+			if bb_moves > 0 {
+				//* add_moves */
 			}
 		}
 	}
 
-	pub fn init_knight(&mut self) {
-		let knight = &mut self.knight;
-
-		let offsets = [17, 15, 10, 6, -6, -10, -15, -17];
-
-		for rank in 0..8i8 {
-			for file in 0..8i8 {
-				let square_index = Board::to_square_index(rank as u8, file as u8) as i8;
-
-				for offset in offsets {
-					let target_square = square_index + offset;
-
-					if target_square >= 0 && target_square < 64 {
-						let y = target_square / 8;
-						let x = target_square - y * 8;
-
-						let max_distance = i8::max((file - x).abs(), (rank - y).abs());
-
-						if max_distance == 2 {
-							set_bit(&mut knight[square_index as usize], target_square as u8);
-						}
-					}
-				}
-			}
-		}
+	pub fn castling(&self, board: &Board, list: &mut Vec<Move>) {
+		let turn = board.get_color();
 	}
 }

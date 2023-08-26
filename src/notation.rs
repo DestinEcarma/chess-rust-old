@@ -3,7 +3,7 @@ use std::{
 	str::FromStr,
 };
 
-use crate::{board::Board, error::Error};
+use crate::error::Error;
 
 #[rustfmt::skip]
 #[derive(Copy, Clone)]
@@ -242,25 +242,25 @@ impl Display for Notation {
 }
 
 impl Notation {
-	pub fn print_notation_board() {
-		let files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-		let ranks = 1..=8;
+	// pub fn print_notation_board() {
+	// 	let files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+	// 	let ranks = 1..=8;
 
-		let mut board = String::new();
+	// 	let mut board = String::new();
 
-		for rank in 0..8 {
-			for file in 0..8 {
-				board += &format!(
-					"{:02} => Notation::{}{},\n",
-					Board::to_square_index(rank, file),
-					files[file as usize].to_uppercase(),
-					rank + 1,
-				);
-			}
-		}
+	// 	for rank in 0..8 {
+	// 		for file in 0..8 {
+	// 			board += &format!(
+	// 				"{:02} => Notation::{}{},\n",
+	// 				Board::to_square_index(rank, file),
+	// 				files[file as usize].to_uppercase(),
+	// 				rank + 1,
+	// 			);
+	// 		}
+	// 	}
 
-		println!("{board}\n")
-	}
+	// 	println!("{board}\n")
+	// }
 
 	pub fn to_index(&self) -> usize {
 		*self as usize

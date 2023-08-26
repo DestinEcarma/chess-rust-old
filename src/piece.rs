@@ -11,7 +11,7 @@ pub enum Piece {
 	Queen,
 }
 
-pub const  ALL_PIECES: [Piece; 6] = [
+pub const ALL_PIECES: [Piece; 6] = [
 	Piece::King,
 	Piece::Pawn,
 	Piece::Knight,
@@ -65,6 +65,17 @@ impl Piece {
 			piece.to_uppercase()
 		} else {
 			piece
+		}
+	}
+
+	pub fn to_full_name(&self) -> String {
+		match self {
+			Piece::King => "King".to_string(),
+			Piece::Pawn => "Pawn".to_string(),
+			Piece::Knight => "Knight".to_string(),
+			Piece::Bishop => "Bishop".to_string(),
+			Piece::Rook => "Rook".to_string(),
+			Piece::Queen => "Queen".to_string(),
 		}
 	}
 }

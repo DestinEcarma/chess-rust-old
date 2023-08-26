@@ -1,8 +1,8 @@
+use super::MoveGenerator;
+
 use crate::board::Board;
 
-use super::MoveGen;
-
-impl MoveGen {
+impl MoveGenerator {
 	pub fn rook_num_to_edge(square_index: u8) -> [u8; 4] {
 		let (rank, file) = Board::square_to_rank_file(square_index);
 		let rank = rank as i8;

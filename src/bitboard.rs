@@ -22,10 +22,21 @@ pub fn get_lsb_index(bitboard: Bitboard) -> u8 {
 	bitboard.trailing_zeros() as u8
 }
 
+pub fn get_lsb_bitboard(bitboard: Bitboard) -> Bitboard {
+	bitboard & !(bitboard - 1)
+}
+
 pub fn pop_lsb(bitboard: &mut Bitboard) -> u8 {
 	let lsb_index = get_lsb_index(*bitboard);
 	*bitboard &= *bitboard - 1;
 	lsb_index
+}
+
+pub fn pop_lsb_to_bitboard(bitboard: &mut Bitboard) -> Bitboard {
+	let least_bit = get_lsb_bitboard(*bitboard);
+	*bitboard &= !least_bit;
+
+	least_bit
 }
 
 pub fn get_bit_indices(mut bitboard: Bitboard) -> Vec<u8> {
