@@ -12,15 +12,15 @@ pub enum Piece {
 }
 
 pub const ALL_PIECES: [Piece; 6] = [
-	Piece::King,
-	Piece::Pawn,
-	Piece::Knight,
-	Piece::Bishop,
-	Piece::Rook,
-	Piece::Queen,
+	Piece::King,   //* 0b0000 */
+	Piece::Pawn,   //* 0b0001 */
+	Piece::Knight, //* 0b0010 */
+	Piece::Bishop, //* 0b0011 */
+	Piece::Rook,   //* 0b0100 */
+	Piece::Queen,  //* 0b0101 */
 ];
 
-pub const PROMOTION_PIECES: [Piece; 4] = [Piece::Queen, Piece::Rook, Piece::Bishop, Piece::Bishop];
+pub const PROMOTION_PIECES: [Piece; 4] = [Piece::Queen, Piece::Rook, Piece::Bishop, Piece::Knight];
 
 impl From<char> for Piece {
 	fn from(char: char) -> Self {
@@ -54,6 +54,18 @@ impl Display for Piece {
 }
 
 impl Piece {
+	pub fn new(piece_index: usize) -> Self {
+		match piece_index {
+			0 => Piece::King,
+			1 => Piece::Pawn,
+			2 => Piece::Knight,
+			3 => Piece::Bishop,
+			4 => Piece::Rook,
+			5 => Piece::Queen,
+			_ => panic!(),
+		}
+	}
+
 	pub fn to_index(&self) -> usize {
 		*self as usize
 	}

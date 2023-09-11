@@ -34,6 +34,10 @@ impl MoveGenerator {
 		self.init_knight();
 		self.init_magic(Piece::Rook);
 		self.init_magic(Piece::Bishop);
+
+		for square_index in 0..64usize {
+			self.square_bit[square_index] = 1 << square_index
+		}
 	}
 
 	fn init_king(&mut self) {

@@ -1,7 +1,7 @@
 use super::MoveGenerator;
 
 use crate::{
-	bitboard::{is_occupied, set_bit, Bitboard},
+	bitboard::{is_occupied, print_bitboard, set_bit, Bitboard},
 	color::Color,
 	piece::Piece,
 };
@@ -58,9 +58,9 @@ impl MoveGenerator {
 		if blockers == 0 {
 			return (blockers, attack);
 		} else {
-			let _attack = self.get_slider_attacks(piece, square_index, occupancy ^ blockers);
+			let xray = attack ^ self.get_slider_attacks(piece, square_index, occupancy ^ blockers);
 
-			return (attack ^ _attack | blockers, _attack);
+			return (xray, attack);
 		}
 	}
 
