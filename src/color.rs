@@ -9,8 +9,6 @@ pub enum Color {
 	Black,
 }
 
-pub const ALL_COLORS: [Color; 2] = [Color::White, Color::Black];
-
 impl From<char> for Color {
 	fn from(value: char) -> Self {
 		if value == value.to_ascii_uppercase() {
@@ -50,9 +48,5 @@ impl Display for Color {
 impl Color {
 	pub fn to_index(&self) -> usize {
 		*self as usize
-	}
-
-	pub fn to_string(&self) -> String {
-		format!("{}", self)
 	}
 }

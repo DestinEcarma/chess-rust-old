@@ -3,7 +3,7 @@ use std::fmt::Display;
 use super::MoveGenerator;
 
 use crate::{
-	bitboard::{pop_lsb, print_bitboard, Bitboard},
+	bitboard::{pop_lsb, Bitboard},
 	board::Board,
 	color::Color,
 	notation::Notation,
@@ -181,7 +181,7 @@ impl MoveGenerator {
 			data |= move_type << Shift::MOVE_TYPE;
 
 			if castle {
-				let mut castle_right;
+				let castle_right;
 
 				if color == Color::White {
 					if direction > 0 {

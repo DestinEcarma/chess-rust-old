@@ -1,10 +1,10 @@
 use crate::{
-	bitboard::{clear_bit, is_occupied, print_bitboard, set_bit, Bitboard},
+	bitboard::{clear_bit, is_occupied, set_bit, Bitboard},
 	color::Color,
 	error::Error,
 	move_gen::{defs::Move, PAWN_PUSH_DIRECTION},
 	notation::Notation,
-	piece::{self, Piece, ALL_PIECES},
+	piece::{Piece, ALL_PIECES},
 };
 use std::{
 	fmt::{Display, Formatter, Result},
@@ -342,7 +342,6 @@ impl Board {
 
 			self._undo_move_bit(piece_moved, color, start_square, target_square);
 
-			let i8_start_square = start_square as i8;
 			let i8_target_square = target_square as i8;
 			let move_type = prev_move.get_move_type();
 

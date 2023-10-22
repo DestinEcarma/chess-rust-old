@@ -1,6 +1,6 @@
 use super::MoveGenerator;
 
-use crate::bitboard::{print_bitboard, set_bit, Bitboard};
+use crate::bitboard::{set_bit, Bitboard};
 
 pub type BlockerBoards = Vec<Bitboard>;
 

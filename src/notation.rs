@@ -242,30 +242,12 @@ impl Display for Notation {
 }
 
 impl Notation {
-	// pub fn print_notation_board() {
-	// 	let files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-	// 	let ranks = 1..=8;
-
-	// 	let mut board = String::new();
-
-	// 	for rank in 0..8 {
-	// 		for file in 0..8 {
-	// 			board += &format!(
-	// 				"{:02} => Notation::{}{},\n",
-	// 				Board::to_square_index(rank, file),
-	// 				files[file as usize].to_uppercase(),
-	// 				rank + 1,
-	// 			);
-	// 		}
-	// 	}
-
-	// 	println!("{board}\n")
-	// }
-
+	#[allow(dead_code)]
 	pub fn to_index(&self) -> usize {
 		*self as usize
 	}
 
+	#[allow(dead_code)]
 	pub fn to_string(&self) -> String {
 		format!("{}", self)
 	}

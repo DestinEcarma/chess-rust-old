@@ -1,5 +1,5 @@
 [package]
-name = "chess-rust"
+name = "chess-rust-old"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,3 +8,14 @@ edition = "2021"
 [dependencies]
 failure = "0.1.8"
 rand = "0.8.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = 'abort'
+debug = false
+rpath = false
+debug-assertions = false
+incremental = false
+overflow-checks = false

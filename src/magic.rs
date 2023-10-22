@@ -1,7 +1,7 @@
 use rand::Rng;
 
 use crate::{
-	bitboard::{print_bitboard, Bitboard},
+	bitboard::Bitboard,
 	move_gen::MoveGenerator,
 	piece::Piece,
 };
@@ -154,12 +154,14 @@ impl Magic {
 	}
 }
 
+#[allow(dead_code)]
 fn random_u64_fewbits() -> u64 {
 	let mut rng = rand::thread_rng();
 
 	rng.gen::<u64>() & rng.gen::<u64>() & rng.gen::<u64>()
 }
 
+#[allow(dead_code)]
 pub fn find_magic(piece: Piece) {
 	let ok = piece == Piece::Rook || piece == Piece::Bishop;
 	assert!(ok, "Illigal piece: {}", piece.to_full_name());

@@ -5,20 +5,13 @@ mod init;
 mod mask;
 mod num_to_edge;
 
-use std::ops::Range;
-
 use self::defs::Move;
 
 use crate::{
-	bitboard::{
-		self, get_lsb_index, is_occupied, pop_lsb, pop_lsb_to_bitboard, print_bitboard, set_bit,
-		Bitboard,
-	},
+	bitboard::{get_lsb_index, pop_lsb, set_bit, Bitboard},
 	board::Board,
-	color::Color,
 	magic::Magic,
-	notation::{self, Notation},
-	piece::{Piece, ALL_PIECES, PROMOTION_PIECES},
+	piece::Piece,
 };
 
 pub const PAWN_PUSH_DIRECTION: [i8; 2] = [8, -8];
@@ -112,12 +105,9 @@ impl MoveGenerator {
 
 	pub fn piece(&self, board: &Board, piece: Piece, list: &mut Vec<Move>) {
 		let color = board.get_color();
+
 		let bb_occupancy = board.get_occupancy();
-
-		let bb_empty = !bb_occupancy;
 		let bb_ally_pieces = board.get_allys(color);
-		let bb_opponent_pieces = board.get_allys(!color);
-
 		let mut bb_pieces = board.get_bitboard(piece, color);
 
 		let is_king = piece == Piece::King;
@@ -153,19 +143,12 @@ impl MoveGenerator {
 		let bb_empty = !board.get_occupancy();
 
 		let bb_opponent_pieces = board.get_allys(inactive);
-		let bb_opp_rooks = board.get_bitboard(Piece::Rook, inactive);
-		let bb_opp_queens = board.get_bitboard(Piece::Queen, inactive);
-
-		let bb_ally_king = board.get_bitboard(Piece::King, color);
 		let mut bb_ally_pawns = board.get_bitboard(Piece::Pawn, color);
 
 		let color_index = color.to_index();
 		let double_push_rank = PAWN_DOUBLE_PUSH_RANK[color_index];
 		let direction = PAWN_PUSH_DIRECTION[color_index];
 		let rotation_count = (64 + direction) as u32;
-
-		let enpassant_pin_rank = double_push_rank.rotate_left(rotation_count);
-		let bb_enpassant_pieces = bb_ally_king | bb_opp_rooks | bb_opp_queens;
 
 		while bb_ally_pawns > 0 {
 			let square_index = pop_lsb(&mut bb_ally_pawns) as usize;
@@ -275,7 +258,6 @@ impl MoveGenerator {
 
 		let bb_empty = !board.get_occupancy();
 		let bb_ally_king = board.get_bitboard(Piece::King, color);
-		let bb_ally_rook = board.get_bitboard(Piece::Rook, color);
 
 		let mut ally_castle_rights =
 			(CASTLE_RIGHTS[color.to_index()] & board.castle_rights) as Bitboard;

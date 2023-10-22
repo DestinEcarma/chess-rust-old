@@ -1,7 +1,7 @@
 use super::MoveGenerator;
 
 use crate::{
-	bitboard::{get_lsb_index, pop_lsb, pop_lsb_to_bitboard, print_bitboard, Bitboard},
+	bitboard::{get_lsb_index, pop_lsb, pop_lsb_to_bitboard, Bitboard},
 	board::Board,
 	piece::Piece,
 };

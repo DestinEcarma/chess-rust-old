@@ -1,11 +1,10 @@
 use super::MoveGenerator;
 
 use crate::{
-	bitboard::{print_bitboard, set_bit, Bitboard},
+	bitboard::{set_bit, Bitboard},
 	board::Board,
 	color::Color,
 	magic::{Magic, BISHOP_MAGIC_NR, ROOK_MAGIC_NR},
-	move_gen::attack::AttackBoards,
 	piece::Piece,
 };
 

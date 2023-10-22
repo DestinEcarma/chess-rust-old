@@ -1,7 +1,7 @@
 use super::MoveGenerator;
 
 use crate::{
-	bitboard::{is_occupied, print_bitboard, set_bit, Bitboard},
+	bitboard::{is_occupied, set_bit, Bitboard},
 	color::Color,
 	piece::Piece,
 };
